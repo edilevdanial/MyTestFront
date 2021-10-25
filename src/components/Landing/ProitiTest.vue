@@ -1,6 +1,6 @@
 <template>
 <v-container fluid>
-  <v-row v-if="checkIsFind">
+  <v-row v-if="test.questions!==undefined">
       <v-col cols="12" align-self="center" class="pa-16 grey">
         <h3>{{test.name}}</h3>
 
@@ -23,7 +23,7 @@
         <!--        </v-alert>-->
         <div class="d-flex navigate__questions">
 
-        <div class="question_button_index" v-for="(items,index) in test.questions" :key="index">
+        <div class="question_button_index" v-for="(item,index) in test.questions" :key="item.answers">
           <v-btn
               height="50px"
               class="mr-3"
@@ -54,7 +54,7 @@
                 </v-radio-group>
               </v-row>
           </div>
-        <div v-if="+timerSecund===0&&+timerMinute===0" class="d-flex justify-end">
+        <div v-if="(+timerSecund===0&&+timerMinute===0)||showBtnResult" class="d-flex justify-end">
           <v-btn @click="finishTest" color="primary">
             Показать результаты
           </v-btn>
@@ -71,12 +71,15 @@
   <v-row  v-show="checkIsSdanTest">
     <v-col cols="12">
       <div class="text-center black opacity loading">
-        <v-progress-circular
-            :size="70"
-            :width="7"
-            color="white"
-            indeterminate
-        ></v-progress-circular>
+        <div>
+          <v-progress-circular
+              :size="70"
+              :width="7"
+              color="white"
+              indeterminate
+          ></v-progress-circular>
+          <h2>Подождите несколько секунд...</h2>
+        </div>
       </div>
     </v-col>
   </v-row>
@@ -92,24 +95,34 @@ export default {
   // components: {SvgIcon},
   data:function () {
     return {
+      showBtnResult:false,
       checkIsSdanTest:false,
       questionIndex:0,
-      answerQuestion:[] ,
-      test: null,
-      checkIsFind:true,
+      answerQuestion:[],
+      test: {},
       timerMinute:11,
       timerSecund:59,
     }
   },
+  watch:{
+    answerQuestion:function () {
+      this.answerQuestion.some(el=>{
+        if (el!==null) {
+          this.showBtnResult = true
+        }else{
+          this.showBtnResult = false
+          return true
+        }
+      })
+    }
+  },
   computed:{
-    getLength() {
-      return this.test.question.length
-    },
     getImg(){
      return  require('./../../assets/error.svg')
     }
   },
   mounted() {
+    
     console.log('http://localhost:3600/api/test/'+this.$route.params.id)
     // axios.get('http://localhost:3600/api/test/'+this.$route.params.id).then(response=>{
     //   this.test = response
@@ -125,9 +138,6 @@ export default {
     }).catch(error=>{
       console.log(error)
     }).finally(()=>{
-      if (!this.test){
-        this.checkIsFind = false
-      }
       let timerInterval = setInterval(()=>{
         if (+this.timerSecund===0&&+this.timerMinute!==0){
           this.timerSecund=59;
@@ -141,7 +151,7 @@ export default {
           console.log('cleared')
           clearInterval(timerInterval)
         }
-        console.log(this.timerSecund, +this.timerSecund)
+        // console.log(this.timerSecund, +this.timerSecund)
         if(+this.timerSecund<10&&this.timerSecund!=='00'){
           this.timerSecund = '0'+this.timerSecund
         }
@@ -151,6 +161,9 @@ export default {
   methods:{
     finishTest(){
       this.checkIsSdanTest = true
+      setTimeout( ()=>{
+        this.checkIsSdanTest = false
+      },5000)
     }
   }
 
