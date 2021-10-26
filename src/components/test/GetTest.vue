@@ -5,7 +5,7 @@
         <v-card
             width="500px"
             elevation="3"
-            class="pa-5"
+            class="d-flex justify-space-between pa-5"
         >
           {{item.name}}
           <v-btn @click="toTest(index)" elevation="2" outlined color="blue">пройти</v-btn>
